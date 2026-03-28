@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body class="app-body">
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1 fw-bold">Dashboard</h1>
+            <p class="text-muted mb-0 small">
+                Live overview &mdash;
+                <span id="dashboard-clock" class="text-mono text-warning"></span>
+            </p>
+        </div>
+        <a href="/products" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-grid me-1"></i>Open inventory
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4" th:if="${stats != null}">
+        <div class="col-sm-6 col-xl-3">
+            <div class="glass-panel p-4 h-100">
+                <div class="stat-label">Total SKUs</div>
+                <div class="stat-number text-mono" th:text="${stats.totalProducts}">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="glass-panel p-4 h-100">
+                <div class="stat-label">Low stock (1&ndash;<span th:text="${stats.lowStockThreshold}">5</span>)</div>
+                <div class="stat-number text-warning text-mono" th:text="${stats.lowStockCount}">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="glass-panel p-4 h-100">
+                <div class="stat-label">Out of stock</div>
+                <div class="stat-number text-danger text-mono" th:text="${stats.outOfStockCount()}">0</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="glass-panel p-4 h-100">
+                <div class="stat-label">Est. inventory value</div>
+                <div class="stat-number text-mono">
+                    ₹<span th:text="${#numbers.formatDecimal(stats.estimatedInventoryValue, 1, 2)}">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-panel p-4">
+        <h2 class="h6 text-uppercase text-muted mb-3" style="letter-spacing: 0.12em;">Quick actions</h2>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/low-stock" class="btn btn-outline-warning btn-sm">
+                <i class="bi bi-exclamation-triangle me-1"></i>Review stock alerts
+            </a>
+            <a href="/products" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-search me-1"></i>Search products
+            </a>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<script th:inline="javascript">
+    (function () {
+        var el = document.getElementById('dashboard-clock');
+        function tick() {
+            el.textContent = new Date().toLocaleString(undefined, {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+        tick();
+        setInterval(tick, 1000);
+    })();
+</script>
+</body>
+</html>

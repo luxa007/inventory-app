@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body class="app-body">
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<main class="container py-4">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="hero-block p-4 p-md-5 mb-4">
+        <h1 class="display-6 fw-bold mb-3">
+            <i class="bi bi-boxes me-2 text-warning"></i>SmartStock
+            <span class="text-warning">AI</span>
+        </h1>
+        <p class="col-lg-8 fs-5 text-muted mb-4">
+            Industrial-grade inventory control. Monitor velocity, surface risk, and keep shelves honest.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+            <a sec:authorize="!isAuthenticated()" href="/login" class="btn btn-success btn-lg px-4">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign in
+            </a>
+            <a sec:authorize="isAuthenticated()" href="/dashboard" class="btn btn-success btn-lg px-4">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+            </a>
+            <a sec:authorize="isAuthenticated()" href="/products" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-grid me-2"></i>Products
+            </a>
+            <a sec:authorize="!isAuthenticated()" href="/register" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-person-plus me-2"></i>Register
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="glass-panel p-4 h-100 stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-2 text-warning"><i class="bi bi-grid"></i></div>
+                    <div>
+                        <div class="stat-label">Inventory</div>
+                        <div class="stat-number text-white">Unified catalog</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-panel p-4 h-100 stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-2 text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div>
+                        <div class="stat-label">Risk</div>
+                        <div class="stat-number text-white">Low &amp; zero stock</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-panel p-4 h-100 stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="fs-2 text-white-50"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                    <div>
+                        <div class="stat-label">Export</div>
+                        <div class="stat-number text-white">Excel (admins)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
