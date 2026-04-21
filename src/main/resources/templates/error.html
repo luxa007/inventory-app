@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head}"></head>
-<body class="app-body">
+<body class="bg-light">
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
-<main class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6 text-center">
-            <div class="glass-panel p-5">
-                <div class="error-code mb-3"
+<main class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6 text-center">
+            <div class="card shadow-sm border-0 p-5">
+                <div class="display-1 fw-bold text-muted mb-3"
                      th:text="${errorCode != null ? errorCode : status}">500</div>
-                <h1 class="h4 mb-3 fw-bold"
-                    th:text="${errorTitle != null ? errorTitle : 'Something went wrong'}">Error</h1>
+                <h2 class="h4 mb-2" th:text="${errorTitle != null ? errorTitle : 'Something went wrong'}">Error</h2>
                 <p class="text-muted mb-4"
-                   th:text="${errorMessage != null ? errorMessage : (message != null ? message : 'An unexpected error occurred.')}">
-                    Message
-                </p>
-                <div class="d-flex flex-wrap justify-content-center gap-2">
-                    <a href="/products" class="btn btn-success px-4">
-                        <i class="bi bi-grid me-1"></i>Products
-                    </a>
-                    <a href="/" class="btn btn-outline-light px-4">Home</a>
-                </div>
+                   th:text="${errorMessage != null ? errorMessage : (message != null ? message : 'An unexpected error occurred.')}"></p>
+                <a href="/products" class="btn btn-success px-4">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Products
+                </a>
             </div>
         </div>
     </div>

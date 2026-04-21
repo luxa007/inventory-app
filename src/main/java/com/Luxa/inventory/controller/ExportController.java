@@ -3,10 +3,10 @@ package com.Luxa.inventory.controller;
 import com.Luxa.inventory.service.ExportService;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.nio.charset.StandardCharsets;
 
@@ -20,7 +20,6 @@ public class ExportController {
     }
 
     @GetMapping("/export/products")
-    @ResponseBody
     public ResponseEntity<byte[]> exportProducts() {
         byte[] data = exportService.exportProductsToExcel();
         return ResponseEntity.ok()

@@ -1,23 +1,20 @@
 package com.Luxa.inventory.dto;
 
-import com.Luxa.inventory.model.Product;
-
 import java.math.BigDecimal;
 
-public record ProductDto(
-        Long id,
-        String name,
-        BigDecimal price,
-        Integer quantity,
-        String category
-) {
-    public static ProductDto fromEntity(Product p) {
-        return new ProductDto(
-                p.getId(),
-                p.getName(),
-                p.getPrice(),
-                p.getQuantity(),
-                p.getCategory()
-        );
-    }
+public class ProductDto {
+    private String name;
+    private String category;
+    private BigDecimal price;
+    private int quantity;
+
+    // Getters and Setters
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+    public int getQuantity() { return quantity; }
+    public void setQuantity(int quantity) { this.quantity = quantity; }
 }

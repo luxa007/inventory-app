@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:fragment="main-layout(content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStock AI | Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .wrapper { display: flex; align-items: stretch; }
+        
+        /* Sidebar */
+        #sidebar { min-width: 260px; max-width: 260px; background: #0f172a; color: #fff; min-height: 100vh; transition: all 0.3s; }
+        .sidebar-header { padding: 30px 25px; background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-link { padding: 12px 25px; display: flex; align-items: center; color: #94a3b8; text-decoration: none; transition: 0.3s; border-radius: 8px; margin: 4px 15px; }
+        .sidebar-link:hover, .sidebar-link.active { background: #3b82f6; color: white; }
+        .sidebar-link i { margin-right: 12px; font-size: 1.1rem; }
+
+        /* Main Content */
+        #content { width: 100%; }
+        .top-navbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 15px 30px; }
+        .main-container { padding: 40px; }
+        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .table-container { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-box-seam-fill text-primary me-2"></i>SmartStock <span class="text-info">AI</span></h5>
+            </div>
+            <div class="mt-4">
+                <a href="/products" class="sidebar-link active"><i class="bi bi-grid"></i> Dashboard</a>
+                <a href="/add-product" class="sidebar-link"><i class="bi bi-plus-square"></i> New Product</a>
+                <a href="/products/low-stock" class="sidebar-link"><i class="bi bi-lightning-charge"></i> AI Insights</a>
+                <hr class="mx-3 border-secondary">
+                <a href="/logout" class="sidebar-link text-danger"><i class="bi bi-power"></i> Logout</a>
+            </div>
+        </nav>
+        
+        <div id="content">
+            <div class="top-navbar d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 text-muted">Welcome, Admin</h6>
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-soft-primary text-primary me-3">System Online</span>
+                    <i class="bi bi-person-circle fs-4"></i>
+                </div>
+            </div>
+            <div class="main-container">
+                <div th:insert="${content}"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

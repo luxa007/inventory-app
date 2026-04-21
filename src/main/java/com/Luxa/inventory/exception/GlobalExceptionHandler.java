@@ -8,11 +8,23 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import com.Luxa.inventory.exception.ResourceNotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNoResourceFound(NoResourceFoundException ex, Model model) {
+        model.addAttribute("errorCode", "404");
+        model.addAttribute("errorTitle", "Page Not Found");
+        model.addAttribute("errorMessage", "The page you are looking for does not exist.");
+        return "error";
+    }
+
+    // We removed the HttpRequestMethodNotSupportedException handler 
+    // to let Spring Security handle login redirects naturally.
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -23,19 +35,10 @@ public class GlobalExceptionHandler {
         return "error";
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleNoResourceFound(NoResourceFoundException ex, Model model) {
-        model.addAttribute("errorCode", "404");
-        model.addAttribute("errorTitle", "Not Found");
-        model.addAttribute("errorMessage", "The requested page does not exist.");
-        return "error";
-    }
-
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleGeneral(Exception ex, Model model) {
-        log.error("Unhandled exception", ex);
+        log.error("Unhandled exception: ", ex);
         model.addAttribute("errorCode", "500");
         model.addAttribute("errorTitle", "Something went wrong");
         model.addAttribute("errorMessage", "An unexpected error occurred. Please try again.");

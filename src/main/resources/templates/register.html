@@ -1,32 +1,28 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: head}"></head>
-<body class="app-body">
+<body class="bg-light">
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
-<main class="container py-5">
+<main class="container">
     <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <div class="glass-panel p-4 p-md-5">
-                <h1 class="h4 mb-4 fw-bold">Create account</h1>
-                <div th:replace="~{fragments/layout :: flash}"></div>
-                <form th:action="@{/register}" method="post" class="needs-validation" novalidate>
-                    <div class="mb-3">
-                        <label class="form-label small text-muted text-uppercase">Username</label>
-                        <input type="text" name="username" class="form-control" required autocomplete="username"
-                               autofocus>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label small text-muted text-uppercase">Password</label>
-                        <input type="password" name="password" class="form-control" required minlength="4"
-                               autocomplete="new-password">
-                        <div class="form-text text-muted small">At least 4 characters.</div>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100 py-2 mb-3">Register</button>
-                    <p class="text-center text-muted small mb-0">
-                        Already have an account? <a href="/login">Sign in</a>
-                    </p>
-                </form>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body p-4">
+                    <h1 class="h5 mb-4">User registration</h1>
+                    <form action="/register" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" required autocomplete="username">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <a href="/" class="btn btn-outline-secondary ms-2">Home</a>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

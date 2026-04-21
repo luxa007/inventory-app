@@ -1,24 +1,21 @@
 # SmartStock AI (Inventory)
 
-Spring Boot 3.3.11 — Thymeleaf, JPA, **Spring Security** (ADMIN / VIEWER), **Flyway** (prod), **Actuator**, **Apache POI** export, **Testcontainers** on the classpath (repository tests use embedded H2).
+Spring Boot 3.3.11 + Thymeleaf + JPA inventory demo with product CRUD, search, pagination, low-stock page, and dev data seeding.
 
-## Run (development — H2)
+## Requirements
 
-```bash
-./mvnw spring-boot:run
-```
+- Java 17+
+- Maven (or use `./mvnw`)
 
-- App: `http://localhost:8080`
-- Seeded users (dev): **admin** / `admin` (ADMIN), **viewer** / `viewer` (VIEWER)
-- H2 console: `http://localhost:8080/h2-console` (JDBC `jdbc:h2:mem:smartstockdb`, user `sa`, empty password) — visible to ADMIN in the footer
-
-## Production profile + Docker
+## Run (development – H2 in-memory)
 
 ```bash
-docker compose up --build
+./mvnw clean spring-boot:run
 ```
 
-Set `SPRING_PROFILES_ACTIVE=prod` and Postgres env vars (`DB_HOST`, `DB_NAME`, etc.). Flyway runs `db/migration/V1__init_schema.sql`.
+H2 console: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:smartstockdb`, user `sa`, empty password).
+
+On startup with profile `dev`, sample products are seeded if the database is empty.
 
 ## Tests
 
@@ -26,14 +23,9 @@ Set `SPRING_PROFILES_ACTIVE=prod` and Postgres env vars (`DB_HOST`, `DB_NAME`, e
 ./mvnw test
 ```
 
-## Roles
+## Main URLs
 
-| Role    | Products | Stock alerts | Add / edit / delete | Excel export |
-|---------|----------|----------------|----------------------|--------------|
-| VIEWER  | Read     | Read           | No                   | No           |
-| ADMIN   | Full     | Full           | Yes                  | Yes          |
-
-## API
-
-- `GET /api/products` — list (JSON, authenticated)
-- `GET /api/products/{id}` — detail
+- Home: `http://localhost:8080/`
+- Products: `http://localhost:8080/products`
+- Add product: `http://localhost:8080/add-product`
+- Register (demo): `http://localhost:8080/register`

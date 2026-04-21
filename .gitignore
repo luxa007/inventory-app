@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+ai_env/
+venv/
+uvicorn
+java.util.List
+*.bak

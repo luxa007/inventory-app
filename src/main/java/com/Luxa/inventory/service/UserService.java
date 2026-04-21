@@ -1,14 +1,18 @@
 package com.Luxa.inventory.service;
 
-import com.Luxa.inventory.model.Role;
 import com.Luxa.inventory.model.User;
 import com.Luxa.inventory.repository.UserRepository;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -18,22 +22,19 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional
-    public void register(String username, String rawPassword) {
-        if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("Username is required.");
-        }
-        if (rawPassword == null || rawPassword.length() < 4) {
-            throw new IllegalArgumentException("Password must be at least 4 characters.");
-        }
-        if (userRepository.existsByUsername(username.trim())) {
-            throw new IllegalArgumentException("Username already taken.");
-        }
-        User u = new User();
-        u.setUsername(username.trim());
-        u.setPassword(passwordEncoder.encode(rawPassword));
-        u.setRole(Role.VIEWER);
-        u.setEnabled(true);
-        userRepository.save(u);
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
+    }
+
+    public void saveUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
     }
 }

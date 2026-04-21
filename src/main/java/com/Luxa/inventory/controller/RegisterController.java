@@ -1,12 +1,11 @@
 package com.Luxa.inventory.controller;
 
+import com.Luxa.inventory.model.User;
 import com.Luxa.inventory.service.UserService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 @Controller
 public class RegisterController {
@@ -18,24 +17,14 @@ public class RegisterController {
     }
 
     @GetMapping("/register")
-    public String showRegisterPage(Model model) {
-        model.addAttribute("pageTitle", "Register");
+    public String showRegisterForm() {
         return "register";
     }
 
+    // This fixes the 405 error
     @PostMapping("/register")
-    public String registerUser(
-            @RequestParam String username,
-            @RequestParam String password,
-            RedirectAttributes redirectAttributes) {
-        try {
-            userService.register(username, password);
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Account created. You can sign in as " + username + ".");
-            return "redirect:/login";
-        } catch (IllegalArgumentException ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-            return "redirect:/register";
-        }
+    public String registerUser(@ModelAttribute User user) {
+        userService.saveUser(user);
+        return "redirect:/login";
     }
 }
