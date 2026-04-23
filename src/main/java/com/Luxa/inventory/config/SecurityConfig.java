@@ -16,6 +16,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/login", "/register", "/css/**", "/js/**", "/api/**").permitAll()
+                .requestMatchers("/add-product", "/edit-product/**", "/update-product/**", "/delete-product/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .userDetailsService(userService)
