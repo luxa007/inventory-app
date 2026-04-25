@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Restock Advisor — Luxa Inventory</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ra-dark: #0f1923; --ra-accent: #e85d26; --ra-muted: #64748b; --ra-border: #e2e8f0; }
+        body { background: #f0f4f8; }
+        .ra-wrapper { max-width: 1050px; margin: 0 auto; padding: 2rem 1rem; font-family: 'DM Sans', sans-serif; }
+        .ra-hero { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .ra-hero h1 { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--ra-dark); margin: 0 0 0.25rem; }
+        .ra-hero p { color: var(--ra-muted); margin: 0; }
+        .btn-analyze { background: var(--ra-dark); color: white; border: none; border-radius: 12px; padding: 0.85rem 2rem; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 0.6rem; }
+        .btn-analyze:hover { background: var(--ra-accent); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(232,93,38,0.3); }
+        .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .loading-card { background: var(--ra-dark); border-radius: 20px; padding: 3rem; text-align: center; display: none; color: white; }
+        .brain-animation { font-size: 4rem; animation: brainPulse 1.5s ease-in-out infinite; display: block; margin-bottom: 1rem; }
+        @keyframes brainPulse { 0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:0.7} }
+        .loading-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; margin: 0 0 0.5rem; }
+        .loading-card p { color: #94a3b8; margin: 0; }
+        .loading-dots span { display: inline-block; width: 8px; height: 8px; background: var(--ra-accent); border-radius: 50%; margin: 0 3px; animation: dotBounce 1.2s ease-in-out infinite; }
+        .loading-dots span:nth-child(2){animation-delay:0.2s}.loading-dots span:nth-child(3){animation-delay:0.4s}
+        @keyframes dotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        .placeholder-card { background: white; border: 2px dashed var(--ra-border); border-radius: 20px; padding: 4rem 2rem; text-align: center; color: var(--ra-muted); }
+        .placeholder-card .icon { font-size: 4rem; margin-bottom: 1rem; display: block; }
+        .placeholder-card h3 { font-family: 'DM Serif Display', serif; color: var(--ra-dark); margin: 0 0 0.5rem; }
+        .results-section { display: none; }
+        .summary-bar { border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .summary-bar.critical{background:#fef2f2;border:1.5px solid #fecaca}
+        .summary-bar.warning{background:#fffbeb;border:1.5px solid #fde68a}
+        .summary-bar.good{background:#f0fdf4;border:1.5px solid #bbf7d0}
+        .urgency-badge { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }
+        .urgency-badge.critical{color:#b91c1c}.urgency-badge.warning{color:#b45309}.urgency-badge.good{color:#15803d}
+        .urgency-dot { width: 10px; height: 10px; border-radius: 50%; animation: urgencyPulse 1.5s ease-in-out infinite; }
+        .critical .urgency-dot{background:#b91c1c}.warning .urgency-dot{background:#b45309}.good .urgency-dot{background:#15803d}
+        @keyframes urgencyPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+        .summary-text { color: #374151; font-size: 0.95rem; line-height: 1.5; flex: 1; }
+        .results-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start; }
+        @media(max-width:768px){.results-grid{grid-template-columns:1fr}}
+        .rec-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .rec-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--ra-border); display: flex; justify-content: space-between; align-items: center; }
+        .rec-header h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--ra-dark); margin: 0; }
+        .total-cost-badge { background: var(--ra-dark); color: white; font-size: 0.85rem; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 50px; }
+        .rec-item { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f8fafc; display: grid; grid-template-columns: 1fr auto; gap: 0.75rem; align-items: start; transition: background 0.15s; }
+        .rec-item:hover{background:#fafbff}.rec-item:last-child{border-bottom:none}
+        .rec-product-name { font-weight: 700; color: var(--ra-dark); font-size: 0.95rem; margin-bottom: 0.2rem; }
+        .rec-reason { color: var(--ra-muted); font-size: 0.83rem; line-height: 1.4; margin-bottom: 0.5rem; }
+        .rec-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+        .priority-tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; padding: 0.2rem 0.6rem; border-radius: 50px; }
+        .priority-tag.high{background:#fee2e2;color:#b91c1c}.priority-tag.medium{background:#fef9c3;color:#854d0e}.priority-tag.low{background:#dcfce7;color:#166534}
+        .qty-info { font-size: 0.8rem; color: var(--ra-muted); }
+        .rec-right { text-align: right; white-space: nowrap; }
+        .order-qty { font-size: 1.4rem; font-weight: 800; color: var(--ra-accent); line-height: 1; }
+        .order-label { font-size: 0.72rem; color: var(--ra-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .order-cost { font-size: 0.85rem; font-weight: 600; color: var(--ra-dark); margin-top: 0.2rem; }
+        .insights-card { background: var(--ra-dark); border-radius: 16px; padding: 1.5rem; color: white; }
+        .insights-card h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; margin: 0 0 1.25rem; }
+        .insight-item { display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: flex-start; }
+        .insight-item:last-child{margin-bottom:0}
+        .insight-bullet { width: 6px; height: 6px; background: var(--ra-accent); border-radius: 50%; margin-top: 0.45rem; flex-shrink: 0; }
+        .insight-text { font-size: 0.88rem; line-height: 1.5; color: #cbd5e1; }
+        .error-card { background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 16px; padding: 2rem; text-align: center; color: #b91c1c; display: none; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="ra-wrapper">
+        <div class="ra-hero">
+            <div class="ra-hero-text">
+                <h1>🧠 Restock Advisor</h1>
+                <p>AI-powered analysis of your inventory — get smart reorder recommendations instantly.</p>
+            </div>
+            <button class="btn-analyze" id="btnAnalyze" onclick="runAnalysis()">
+                <span>⚡</span> Analyze Inventory
+            </button>
+        </div>
+        <div class="error-card" id="errorCard">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">⚠️</div>
+            <strong>Analysis failed</strong>
+            <p id="errorMsg" style="margin:0.5rem 0 0;font-size:0.9rem;"></p>
+        </div>
+        <div class="loading-card" id="loadingCard">
+            <span class="brain-animation">🧠</span>
+            <h3>Claude is analyzing your inventory…</h3>
+            <p>Checking stock levels, sales velocity, and patterns</p>
+            <div class="loading-dots" style="margin-top:1.5rem;"><span></span><span></span><span></span></div>
+        </div>
+        <div class="placeholder-card" id="placeholderCard">
+            <span class="icon">📊</span>
+            <h3>Ready to analyze</h3>
+            <p>Click "Analyze Inventory" and Claude will review your stock levels and tell you exactly what to reorder.</p>
+        </div>
+        <div class="results-section" id="resultsSection">
+            <div class="summary-bar" id="summaryBar">
+                <div class="urgency-badge" id="urgencyBadge"><div class="urgency-dot"></div><span id="urgencyText">—</span></div>
+                <div class="summary-text" id="summaryText"></div>
+            </div>
+            <div class="results-grid">
+                <div class="rec-card">
+                    <div class="rec-header">
+                        <h3>Restock Recommendations</h3>
+                        <div class="total-cost-badge" id="totalCostBadge">₹0</div>
+                    </div>
+                    <div id="recList"></div>
+                </div>
+                <div class="insights-card">
+                    <h3>💡 AI Insights</h3>
+                    <div id="insightsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block layout:fragment="scripts">
+<script>
+    async function runAnalysis() {
+        const btn = document.getElementById('btnAnalyze');
+        btn.disabled = true; btn.innerHTML = '<span>⏳</span> Analyzing…';
+        document.getElementById('placeholderCard').style.display = 'none';
+        document.getElementById('resultsSection').style.display = 'none';
+        document.getElementById('errorCard').style.display = 'none';
+        document.getElementById('loadingCard').style.display = 'block';
+        try {
+            const res = await fetch('/api/restock-advice');
+            if (!res.ok) throw new Error('Server error ' + res.status);
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            renderResults(data);
+        } catch (e) {
+            document.getElementById('loadingCard').style.display = 'none';
+            document.getElementById('errorCard').style.display = 'block';
+            document.getElementById('errorMsg').textContent = e.message;
+            document.getElementById('placeholderCard').style.display = 'block';
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<span>⚡</span> Analyze Again';
+        }
+    }
+    function renderResults(data) {
+        document.getElementById('loadingCard').style.display = 'none';
+        const urgency = data.urgency_level || 'warning';
+        document.getElementById('summaryBar').className = 'summary-bar ' + urgency;
+        document.getElementById('urgencyBadge').className = 'urgency-badge ' + urgency;
+        const labels = {critical:'🚨 Critical',warning:'⚠️ Warning',good:'✅ Healthy'};
+        document.getElementById('urgencyText').textContent = labels[urgency] || urgency;
+        document.getElementById('summaryText').textContent = data.summary || '';
+        const cost = data.total_restock_cost || 0;
+        document.getElementById('totalCostBadge').textContent = '₹' + cost.toLocaleString('en-IN',{maximumFractionDigits:0});
+        const recList = document.getElementById('recList');
+        recList.innerHTML = '';
+        const recs = data.recommendations || [];
+        if (recs.length === 0) {
+            recList.innerHTML = '<div style="padding:2rem;text-align:center;color:#64748b;">No restocking needed — inventory looks good! 🎉</div>';
+        } else {
+            recs.forEach(rec => {
+                const itemCost = (rec.estimated_cost||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+                recList.innerHTML += `<div class="rec-item"><div><div class="rec-product-name">${escHtml(rec.product_name)}</div><div class="rec-reason">${escHtml(rec.reason)}</div><div class="rec-meta"><span class="priority-tag ${rec.priority}">${rec.priority} priority</span><span class="qty-info">Currently: ${rec.current_qty} units</span></div></div><div class="rec-right"><div class="order-qty">${rec.recommended_order_qty}</div><div class="order-label">units to order</div><div class="order-cost">₹${itemCost}</div></div></div>`;
+            });
+        }
+        const insightsList = document.getElementById('insightsList');
+        insightsList.innerHTML = '';
+        (data.insights||[]).forEach(i => {
+            insightsList.innerHTML += `<div class="insight-item"><div class="insight-bullet"></div><div class="insight-text">${escHtml(i)}</div></div>`;
+        });
+        document.getElementById('resultsSection').style.display = 'block';
+    }
+    function escHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</th:block>
+</body>
+</html>

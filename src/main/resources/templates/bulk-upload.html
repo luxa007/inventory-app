@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Bulk Upload — Luxa Inventory</title>
+    <style>
+        :root {
+            --bulk-accent: #6366f1;
+            --bulk-success: #10b981;
+            --bulk-warn: #f59e0b;
+            --bulk-danger: #ef4444;
+        }
+
+        .bulk-wrapper {
+            max-width: 1100px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .bulk-hero {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .bulk-hero h1 { font-size: 2rem; font-weight: 700; color: #1e293b; letter-spacing: -0.5px; }
+        .bulk-hero p { color: #64748b; }
+
+        /* Drop zone */
+        .dropzone {
+            border: 2.5px dashed #c7d2fe;
+            border-radius: 18px;
+            background: #f8f7ff;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .dropzone.dragover {
+            border-color: var(--bulk-accent);
+            background: #eef2ff;
+            transform: scale(1.01);
+        }
+        .dropzone input[type=file] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer;
+        }
+        .dropzone-icon { font-size: 3.5rem; margin-bottom: 0.75rem; }
+        .dropzone h3 { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin: 0 0 0.35rem; }
+        .dropzone p { color: #94a3b8; font-size: 0.9rem; margin: 0; }
+        .dropzone .browse-link { color: var(--bulk-accent); font-weight: 600; text-decoration: underline; }
+
+        /* Progress bar */
+        .progress-bar-wrap {
+            background: #e2e8f0;
+            border-radius: 50px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--bulk-accent), #8b5cf6);
+            border-radius: 50px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+        .progress-label {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            display: none;
+        }
+        .stat-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .stat-chip .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+
+        /* Table */
+        .review-table-wrap {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+            display: none;
+        }
+
+        .review-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .review-table-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .btn-save-all {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-save-all:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); }
+        .btn-save-all:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #94a3b8;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fafafa;
+        }
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafbff; }
+
+        .thumb {
+            width: 52px; height: 52px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #e2e8f0;
+        }
+
+        .editable-input {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.88rem;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .editable-input:focus {
+            outline: none;
+            border-color: var(--bulk-accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+        }
+        .badge-scanning { background: #fef9c3; color: #854d0e; }
+        .badge-done { background: #d1fae5; color: #065f46; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+        .badge-saved { background: #e0e7ff; color: #3730a3; }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+        .remove-btn:hover { color: var(--bulk-danger); background: #fee2e2; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem; right: 2rem;
+            background: #1e293b;
+            color: white;
+            padding: 0.9rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+            z-index: 9999;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="bulk-wrapper">
+        <div class="bulk-hero">
+            <h1>📦 Bulk Upload</h1>
+            <p>Drop multiple product images — Claude identifies each one simultaneously.</p>
+        </div>
+
+        <!-- Drop Zone -->
+        <div class="dropzone" id="dropzone"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)">
+            <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)" />
+            <div class="dropzone-icon">🗂️</div>
+            <h3>Drop product images here</h3>
+            <p>or <span class="browse-link">browse files</span> — JPG, PNG, WEBP supported</p>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-bar-wrap" id="progressWrap">
+            <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-label" id="progressLabel"></div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-chip"><div class="dot" style="background:#6366f1"></div><span id="statTotal">0</span> total</div>
+            <div class="stat-chip"><div class="dot" style="background:#10b981"></div><span id="statDone">0</span> identified</div>
+            <div class="stat-chip"><div class="dot" style="background:#f59e0b"></div><span id="statPending">0</span> scanning</div>
+            <div class="stat-chip"><div class="dot" style="background:#ef4444"></div><span id="statError">0</span> errors</div>
+        </div>
+
+        <!-- Review Table -->
+        <div class="review-table-wrap" id="tableWrap">
+            <div class="review-table-header">
+                <h3>Review & Save</h3>
+                <button class="btn-save-all" id="btnSaveAll" onclick="saveAll()" disabled>
+                    ✅ Save All to Inventory
+                </button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Qty</th>
+                        <th>Price (₹)</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+            <p>No products added yet.</p>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+    let items = []; // { id, file, objectUrl, name, category, qty, price, status }
+    let idCounter = 0;
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        document.getElementById('dropzone').classList.add('dragover');
+    }
+    function handleDragLeave() {
+        document.getElementById('dropzone').classList.remove('dragover');
+    }
+    function handleDrop(e) {
+        e.preventDefault();
+        document.getElementById('dropzone').classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    }
+
+    async function handleFiles(files) {
+        if (!files || files.length === 0) return;
+
+        document.getElementById('tableWrap').style.display = 'block';
+        document.getElementById('statsBar').style.display = 'flex';
+        document.getElementById('progressWrap').style.display = 'block';
+        document.getElementById('progressLabel').style.display = 'block';
+
+        const newItems = Array.from(files).map(f => ({
+            id: ++idCounter,
+            file: f,
+            objectUrl: URL.createObjectURL(f),
+            name: '',
+            category: '',
+            qty: 1,
+            price: '',
+            status: 'scanning'
+        }));
+
+        items.push(...newItems);
+        renderTable();
+        updateStats();
+
+        // Scan all new items in parallel
+        await Promise.all(newItems.map(item => scanItem(item)));
+        updateSaveButton();
+    }
+
+    async function scanItem(item) {
+        const formData = new FormData();
+        formData.append('image', item.file);
+
+        try {
+            const res = await fetch('/api/scan', { method: 'POST', body: formData });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            item.name = data.product_name || '';
+            item.category = data.category || '';
+            item.status = 'done';
+        } catch (e) {
+            item.status = 'error';
+        }
+
+        renderTable();
+        updateStats();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('productTableBody');
+        tbody.innerHTML = '';
+
+        items.forEach(item => {
+            const row = document.createElement('tr');
+            row.id = 'row-' + item.id;
+
+            const badgeClass = {
+                scanning: 'badge-scanning',
+                done: 'badge-done',
+                error: 'badge-error',
+                saved: 'badge-saved'
+            }[item.status] || 'badge-scanning';
+
+            const badgeText = {
+                scanning: '⏳ Scanning…',
+                done: '✓ Identified',
+                error: '✗ Failed',
+                saved: '✅ Saved'
+            }[item.status] || '…';
+
+            const disabled = item.status === 'saved' ? 'disabled' : '';
+
+            row.innerHTML = `
+                <td><img src="${item.objectUrl}" class="thumb" alt="product" /></td>
+                <td><input class="editable-input" value="${escapeHtml(item.name)}" placeholder="Product name"
+                    ${disabled} oninput="updateItem(${item.id}, 'name', this.value)" /></td>
+                <td><input class="editable-input" value="${escapeHtml(item.category)}" placeholder="Category"
+                    ${disabled} oninput="updateItem(${item.id}, 'category', this.value)" /></td>
+                <td><input class="editable-input" type="number" value="${item.qty}" min="0" style="width:70px"
+                    ${disabled} oninput="updateItem(${item.id}, 'qty', this.value)" /></td>
+                <td><input class="editable-input" type="number" value="${item.price}" min="0" step="0.01"
+                    placeholder="0.00" style="width:90px"
+                    ${disabled} oninput="updateItem(${item.id}, 'price', this.value)" /></td>
+                <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
+                <td><button class="remove-btn" onclick="removeItem(${item.id})" ${disabled}>🗑</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Update progress bar
+        const total = items.length;
+        const done = items.filter(i => i.status !== 'scanning').length;
+        const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressLabel').textContent =
+            `Analyzed ${done} of ${total} images (${pct}%)`;
+    }
+
+    function updateItem(id, field, value) {
+        const item = items.find(i => i.id === id);
+        if (item) item[field] = value;
+    }
+
+    function removeItem(id) {
+        items = items.filter(i => i.id !== id);
+        renderTable();
+        updateStats();
+        updateSaveButton();
+    }
+
+    function updateStats() {
+        document.getElementById('statTotal').textContent = items.length;
+        document.getElementById('statDone').textContent = items.filter(i => i.status === 'done' || i.status === 'saved').length;
+        document.getElementById('statPending').textContent = items.filter(i => i.status === 'scanning').length;
+        document.getElementById('statError').textContent = items.filter(i => i.status === 'error').length;
+    }
+
+    function updateSaveButton() {
+        const saveable = items.filter(i => i.status === 'done').length;
+        const btn = document.getElementById('btnSaveAll');
+        btn.disabled = saveable === 0;
+        btn.textContent = saveable > 0
+            ? `✅ Save ${saveable} Product${saveable > 1 ? 's' : ''} to Inventory`
+            : '✅ Save All to Inventory';
+    }
+
+    async function saveAll() {
+        const toSave = items.filter(i => i.status === 'done');
+        if (toSave.length === 0) return;
+
+        const btn = document.getElementById('btnSaveAll');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        let saved = 0, failed = 0;
+
+        await Promise.all(toSave.map(async item => {
+            const payload = {
+                name: item.name,
+                category: item.category,
+                quantity: parseInt(item.qty) || 1,
+                price: parseFloat(item.price) || 0
+            };
+            try {
+                const res = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error();
+                item.status = 'saved';
+                saved++;
+            } catch {
+                item.status = 'error';
+                failed++;
+            }
+        }));
+
+        renderTable();
+        updateStats();
+        updateSaveButton();
+
+        const msg = failed === 0
+            ? `🎉 ${saved} product${saved > 1 ? 's' : ''} saved successfully!`
+            : `Saved ${saved}, failed ${failed}. Check errors above.`;
+        showToast(msg);
+
+        if (failed === 0) {
+            setTimeout(() => window.location.href = '/products', 1500);
+        }
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function escapeHtml(str) {
+        return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+</script>
+</th:block>
+</body>
+</html>

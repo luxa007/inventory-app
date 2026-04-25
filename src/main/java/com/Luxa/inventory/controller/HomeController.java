@@ -19,6 +19,8 @@ public class HomeController {
      *
      * @return the logical Thymeleaf view name {@code "home"}
      */
+
+
     @GetMapping("/")
     public String home(Model model) {
         model.addAttribute("pageTitle", "Home");

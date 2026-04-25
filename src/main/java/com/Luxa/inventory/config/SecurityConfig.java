@@ -15,14 +15,14 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/register", "/css/**", "/js/**", "/api/**").permitAll()
+                .requestMatchers("/login", "/register", "/css/**", "/js/**", "/api/**", "/dashboard").permitAll()
                 .requestMatchers("/add-product", "/edit-product/**", "/update-product/**", "/delete-product/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .userDetailsService(userService)
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/products", true)
+                .defaultSuccessUrl("/dashboard", true)
                 .permitAll()
             )
             .logout(logout -> logout.permitAll());

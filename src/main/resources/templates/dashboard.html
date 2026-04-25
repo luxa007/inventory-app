@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: main-layout(~{::div.dash-body})}">
+<body>
+<div class="dash-body">
+
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">📊 Dashboard</h2>
+            <p class="text-muted mb-0">Live inventory overview — updated in real time.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/camera-scan" class="btn btn-outline-secondary btn-sm"><i class="bi bi-camera me-1"></i>Scan</a>
+            <a href="/restock-advisor" class="btn btn-dark btn-sm"><i class="bi bi-robot me-1"></i>Restock AI</a>
+            <a href="/add-product" class="btn btn-primary btn-sm"><i class="bi bi-plus me-1"></i>Add Product</a>
+        </div>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="text-muted small fw-bold text-uppercase">Total Products</div>
+                <h2 class="fw-bold my-2" id="statTotal">—</h2>
+                <div class="text-primary small"><i class="bi bi-boxes"></i> All Items</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="text-muted small fw-bold text-uppercase">Healthy Stock</div>
+                <h2 class="fw-bold my-2 text-success" id="statHealthy">—</h2>
+                <div class="text-success small"><i class="bi bi-check-circle"></i> In Stock</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="text-muted small fw-bold text-uppercase">Low Stock</div>
+                <h2 class="fw-bold my-2 text-warning" id="statLow">—</h2>
+                <div class="text-warning small"><i class="bi bi-exclamation-triangle"></i> Needs Attention</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card text-center">
+                <div class="text-muted small fw-bold text-uppercase">Out of Stock</div>
+                <h2 class="fw-bold my-2 text-danger" id="statOut">—</h2>
+                <div class="text-danger small"><i class="bi bi-x-circle"></i> Urgent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Value row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <div class="text-muted small fw-bold text-uppercase mb-1">Total Inventory Value</div>
+                <h3 class="fw-bold text-primary mb-0" id="statValue">Loading…</h3>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card">
+                <div class="text-muted small fw-bold text-uppercase mb-1">Categories</div>
+                <h3 class="fw-bold text-success mb-0" id="statCats">Loading…</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="table-container p-4">
+                <h6 class="fw-bold mb-3">Stock Status</h6>
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="table-container p-4">
+                <h6 class="fw-bold mb-3">Products by Category</h6>
+                <canvas id="categoryChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="table-container">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">⚠️ Low Stock Alerts</h6>
+                    <a href="/products/low-stock" class="text-primary small">View all →</a>
+                </div>
+                <table class="table table-hover mb-0">
+                    <tbody id="lowStockTable">
+                        <tr><td class="text-center text-muted p-3">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="table-container">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0">🏆 Top Stocked Items</h6>
+                    <a href="/products" class="text-primary small">View all →</a>
+                </div>
+                <table class="table table-hover mb-0">
+                    <tbody id="topStockTable">
+                        <tr><td class="text-center text-muted p-3">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/dashboard-stats')
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            document.getElementById('statTotal').textContent = data.totalProducts;
+            document.getElementById('statHealthy').textContent = data.healthyCount;
+            document.getElementById('statLow').textContent = data.lowStockCount;
+            document.getElementById('statOut').textContent = data.outOfStockCount;
+            document.getElementById('statCats').textContent = data.totalCategories + ' categories';
+            var val = parseFloat(data.totalValue || 0);
+            document.getElementById('statValue').textContent = '₹' + val.toLocaleString('en-IN',{maximumFractionDigits:0});
+            var sd = data.stockStatus || {};
+            new Chart(document.getElementById('statusChart'),{type:'doughnut',data:{labels:Object.keys(sd),datasets:[{data:Object.values(sd),backgroundColor:['#16a34a','#ea580c','#dc2626'],borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},cutout:'65%'}});
+            var cd = data.categoryBreakdown || {};
+            var cl = Object.keys(cd).slice(0,8);
+            new Chart(document.getElementById('categoryChart'),{type:'bar',data:{labels:cl,datasets:[{data:cl.map(function(k){return cd[k];}),backgroundColor:'#3b82f6',borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{grid:{display:false}}}}});
+            var li = data.lowStockItems || [];
+            document.getElementById('lowStockTable').innerHTML = li.length===0 ? '<tr><td class="text-center text-success p-3">All stock healthy!</td></tr>' : li.map(function(i){return '<tr><td><strong>'+i.name+'</strong><br><small class="text-muted">'+(i.category||'')+'</small></td><td class="text-end"><span class="badge bg-danger">'+i.quantity+' left</span></td></tr>';}).join('');
+            var ti = data.topItems || [];
+            document.getElementById('topStockTable').innerHTML = ti.length===0 ? '<tr><td class="text-center text-muted p-3">No products yet.</td></tr>' : ti.map(function(i){return '<tr><td><strong>'+i.name+'</strong><br><small class="text-muted">'+(i.category||'')+'</small></td><td class="text-end fw-bold">'+i.quantity+'</td></tr>';}).join('');
+        }).catch(function(e){console.error(e);});
+});
+</script>
+</div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/dashboard-stats')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            document.getElementById('statTotal').textContent = data.totalProducts;
+            document.getElementById('statHealthy').textContent = data.healthyCount;
+            document.getElementById('statLow').textContent = data.lowStockCount;
+            document.getElementById('statOut').textContent = data.outOfStockCount;
+            document.getElementById('statCats').textContent = data.totalCategories + ' categories';
+            var val = parseFloat(data.totalValue || 0);
+            document.getElementById('statValue').textContent = '₹' + val.toLocaleString('en-IN', {maximumFractionDigits: 0});
+
+            var statusData = data.stockStatus || {};
+            new Chart(document.getElementById('statusChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusData),
+                    datasets: [{ data: Object.values(statusData), backgroundColor: ['#16a34a','#ea580c','#dc2626'], borderWidth: 0 }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+            });
+
+            var catData = data.categoryBreakdown || {};
+            var catLabels = Object.keys(catData).slice(0, 8);
+            new Chart(document.getElementById('categoryChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: catLabels,
+                    datasets: [{ data: catLabels.map(function(k){ return catData[k]; }), backgroundColor: '#3b82f6', borderRadius: 6 }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } }
+            });
+
+            var lowItems = data.lowStockItems || [];
+            var lowBody = document.getElementById('lowStockTable');
+            lowBody.innerHTML = lowItems.length === 0
+                ? '<tr><td class="text-center text-success p-3">All stock healthy!</td></tr>'
+                : lowItems.map(function(i){ return '<tr><td><strong>' + i.name + '</strong><br><small class="text-muted">' + (i.category||'') + '</small></td><td class="text-end"><span class="badge bg-danger">' + i.quantity + ' left</span></td></tr>'; }).join('');
+
+            var topItems = data.topItems || [];
+            var topBody = document.getElementById('topStockTable');
+            topBody.innerHTML = topItems.length === 0
+                ? '<tr><td class="text-center text-muted p-3">No products yet.</td></tr>'
+                : topItems.map(function(i){ return '<tr><td><strong>' + i.name + '</strong><br><small class="text-muted">' + (i.category||'') + '</small></td><td class="text-end fw-bold">' + i.quantity + '</td></tr>'; }).join('');
+        })
+        .catch(function(e) { console.error('Dashboard error:', e); });
+});
+</script>
+</body>
+</html>

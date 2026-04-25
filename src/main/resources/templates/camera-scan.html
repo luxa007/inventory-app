@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{fragments/layout}">
+<head>
+    <title>Camera Scan — Luxa Inventory</title>
+    <style>
+        :root {
+            --scan-accent: #6366f1;
+            --scan-success: #10b981;
+            --scan-warn: #f59e0b;
+        }
+
+        .scan-wrapper {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .scan-hero {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .scan-hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .scan-hero p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+        .scan-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .scan-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Camera Panel */
+        .camera-panel {
+            background: #0f172a;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        #videoFeed {
+            width: 100%;
+            display: block;
+            border-radius: 16px 16px 0 0;
+            min-height: 280px;
+            background: #000;
+            object-fit: cover;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            border-radius: 16px 16px 0 0;
+        }
+
+        /* Corner brackets */
+        .corner {
+            position: absolute;
+            width: 28px; height: 28px;
+            border-color: var(--scan-accent);
+            border-style: solid;
+            border-width: 0;
+        }
+        .corner-tl { top: 12px; left: 12px; border-top-width: 3px; border-left-width: 3px; border-radius: 4px 0 0 0; }
+        .corner-tr { top: 12px; right: 12px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 4px 0 0; }
+        .corner-bl { bottom: 12px; left: 12px; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 4px; }
+        .corner-br { bottom: 12px; right: 12px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 4px 0; }
+
+        /* Scan line */
+        .scan-line {
+            position: absolute;
+            left: 12px; right: 12px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--scan-accent), transparent);
+            animation: scanMove 2s ease-in-out infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .scan-line.active { opacity: 1; }
+        @keyframes scanMove {
+            0% { top: 12px; }
+            50% { top: calc(100% - 12px); }
+            100% { top: 12px; }
+        }
+
+        .camera-controls {
+            padding: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            background: #1e293b;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .btn-capture {
+            background: var(--scan-accent);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0.65rem 1.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-capture:hover { background: #4f46e5; transform: scale(1.03); }
+        .btn-capture:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .btn-start {
+            background: #334155;
+            color: #e2e8f0;
+            border: none;
+            border-radius: 50px;
+            padding: 0.65rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-start:hover { background: #475569; }
+
+        /* Result panel */
+        .result-panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-body {
+            padding: 1.25rem;
+        }
+
+        #capturedPreview {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
+            border: 2px solid #e2e8f0;
+        }
+
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: #ede9fe;
+            color: #6d28d9;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+        }
+
+        .pulse-dot {
+            width: 7px; height: 7px;
+            background: #6d28d9;
+            border-radius: 50%;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #1e293b;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--scan-accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+
+        .ai-detected-flag {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            color: var(--scan-success);
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .btn-save {
+            width: 100%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+        .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(16,185,129,0.35); }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .placeholder-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #94a3b8;
+        }
+        .placeholder-state .icon { font-size: 3rem; margin-bottom: 0.75rem; }
+        .placeholder-state p { font-size: 0.9rem; }
+
+        .loading-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            display: none;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: var(--scan-accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 0.75rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-banner {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            display: none;
+            margin-bottom: 1rem;
+        }
+
+        canvas { display: none; }
+    </style>
+</head>
+
+<body>
+<div layout:fragment="content">
+    <div class="scan-wrapper">
+        <div class="scan-hero">
+            <h1>📸 Camera Scan</h1>
+            <p>Point your camera at a product — AI will identify it instantly.</p>
+        </div>
+
+        <div class="scan-grid">
+            <!-- Camera Panel -->
+            <div class="camera-panel">
+                <div style="position:relative;">
+                    <video id="videoFeed" autoplay playsinline muted></video>
+                    <div class="camera-overlay">
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
+                        <div class="scan-line" id="scanLine"></div>
+                    </div>
+                </div>
+                <canvas id="snapCanvas"></canvas>
+                <div class="camera-controls">
+                    <button class="btn-start" id="btnStart" onclick="startCamera()">▶ Start Camera</button>
+                    <button class="btn-capture" id="btnCapture" onclick="captureAndAnalyze()" disabled>
+                        <span>⚡</span> Scan Product
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result Panel -->
+            <div class="result-panel">
+                <div class="result-header">
+                    <span>🤖</span> AI Detection Result
+                </div>
+                <div class="result-body">
+                    <div class="error-banner" id="errorBanner"></div>
+
+                    <div id="placeholderState" class="placeholder-state">
+                        <div class="icon">🎯</div>
+                        <p>Start the camera and scan a product to see AI-powered detection here.</p>
+                    </div>
+
+                    <div id="loadingState" class="loading-state">
+                        <div class="spinner"></div>
+                        <p style="color:#64748b; font-size:0.9rem;">Claude is analyzing your product…</p>
+                    </div>
+
+                    <div id="resultState" style="display:none;">
+                        <img id="capturedPreview" alt="Captured product" />
+                        <div class="ai-badge">
+                            <div class="pulse-dot"></div>
+                            AI Identified
+                        </div>
+
+                        <form id="productForm" onsubmit="saveProduct(event)">
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <input type="text" id="productName" name="name" required />
+                                <div class="ai-detected-flag" id="nameFlag" style="display:none;">
+                                    ✓ Detected by Claude
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Category</label>
+                                <input type="text" id="productCategory" name="category" required />
+                                <div class="ai-detected-flag" id="categoryFlag" style="display:none;">
+                                    ✓ Detected by Claude
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" id="productQty" name="quantity" value="1" min="0" required />
+                            </div>
+                            <div class="form-group">
+                                <label>Price (₹)</label>
+                                <input type="number" id="productPrice" name="price" step="0.01" min="0" placeholder="0.00" />
+                            </div>
+                            <button type="submit" class="btn-save" id="btnSave">
+                                ✅ Add to Inventory
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+    let stream = null;
+
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            const video = document.getElementById('videoFeed');
+            video.srcObject = stream;
+            document.getElementById('btnCapture').disabled = false;
+            document.getElementById('btnStart').textContent = '⏹ Stop';
+            document.getElementById('btnStart').onclick = stopCamera;
+            document.getElementById('scanLine').classList.add('active');
+        } catch (e) {
+            showError('Camera access denied. Please allow camera permissions.');
+        }
+    }
+
+    function stopCamera() {
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        document.getElementById('btnCapture').disabled = true;
+        document.getElementById('btnStart').textContent = '▶ Start Camera';
+        document.getElementById('btnStart').onclick = startCamera;
+        document.getElementById('scanLine').classList.remove('active');
+    }
+
+    async function captureAndAnalyze() {
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('snapCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+
+        // Show preview
+        const preview = document.getElementById('capturedPreview');
+        preview.src = canvas.toDataURL('image/jpeg');
+        preview.style.display = 'block';
+
+        showLoading();
+        hideError();
+
+        const formData = new FormData();
+        formData.append('image', blob, 'capture.jpg');
+
+        try {
+            const res = await fetch('/api/scan', { method: 'POST', body: formData });
+            if (!res.ok) throw new Error('Scan failed: ' + res.status);
+            const data = await res.json();
+            fillForm(data);
+        } catch (e) {
+            showError(e.message || 'Something went wrong. Please try again.');
+            showPlaceholder();
+        }
+    }
+
+    function fillForm(data) {
+        document.getElementById('productName').value = data.product_name || '';
+        document.getElementById('productCategory').value = data.category || '';
+        if (data.product_name) document.getElementById('nameFlag').style.display = 'flex';
+        if (data.category) document.getElementById('categoryFlag').style.display = 'flex';
+        showResult();
+    }
+
+    async function saveProduct(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSave');
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+
+        const payload = {
+            name: document.getElementById('productName').value,
+            category: document.getElementById('productCategory').value,
+            quantity: parseInt(document.getElementById('productQty').value),
+            price: parseFloat(document.getElementById('productPrice').value) || 0
+        };
+
+        try {
+            const res = await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error('Save failed');
+            btn.textContent = '✅ Saved!';
+            btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
+            setTimeout(() => window.location.href = '/products', 1200);
+        } catch (e) {
+            showError('Could not save product. Please try again.');
+            btn.disabled = false;
+            btn.textContent = '✅ Add to Inventory';
+        }
+    }
+
+    function showLoading() {
+        document.getElementById('placeholderState').style.display = 'none';
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('resultState').style.display = 'none';
+    }
+    function showResult() {
+        document.getElementById('placeholderState').style.display = 'none';
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('resultState').style.display = 'block';
+    }
+    function showPlaceholder() {
+        document.getElementById('placeholderState').style.display = 'block';
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('resultState').style.display = 'none';
+    }
+    function showError(msg) {
+        const b = document.getElementById('errorBanner');
+        b.textContent = '⚠️ ' + msg;
+        b.style.display = 'block';
+    }
+    function hideError() {
+        document.getElementById('errorBanner').style.display = 'none';
+    }
+</script>
+</th:block>
+</body>
+</html>
