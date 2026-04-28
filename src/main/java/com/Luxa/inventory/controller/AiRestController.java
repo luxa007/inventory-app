@@ -15,6 +15,12 @@ import java.util.concurrent.*;
 @RequestMapping("/api")
 public class AiRestController {
 
+    private final com.Luxa.inventory.service.ProductService productService;
+
+    public AiRestController(com.Luxa.inventory.service.ProductService productService) {
+        this.productService = productService;
+    }
+
     // URL of your Python FastAPI sidecar
     private static final String AI_SERVICE_URL = "https://smartstock-ai-service-f2jk.onrender.com/predict";
 
@@ -110,4 +116,26 @@ public class AiRestController {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
         }
     }
+
+    @PostMapping("/products")
+    public ResponseEntity<Map<String, Object>> saveProduct(
+            @RequestBody Map<String, Object> payload,
+            jakarta.servlet.http.HttpServletRequest request) {
+        try {
+            com.Luxa.inventory.model.Product p = new com.Luxa.inventory.model.Product();
+            p.setName((String) payload.get("name"));
+            p.setCategory((String) payload.get("category"));
+            p.setQuantity(Integer.parseInt(payload.get("quantity").toString()));
+            p.setPrice(new java.math.BigDecimal(payload.get("price").toString()));
+            productService.save(p);
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
+    }
+
 }
