@@ -16,7 +16,7 @@ import java.util.concurrent.*;
 public class AiRestController {
 
     // URL of your Python FastAPI sidecar
-    private static final String AI_SERVICE_URL = "http://localhost:8000/predict";
+    private static final String AI_SERVICE_URL = "https://smartstock-ai-service-f2jk.onrender.com/predict";
 
     private final RestTemplate restTemplate = new RestTemplate();
 

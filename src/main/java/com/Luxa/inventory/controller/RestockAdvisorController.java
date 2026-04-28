@@ -15,7 +15,7 @@ public class RestockAdvisorController {
 
     private final ProductService productService;
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String AI_SERVICE_URL = "http://localhost:8000/restock-advice";
+    private static final String AI_SERVICE_URL = "https://smartstock-ai-service-f2jk.onrender.com/restock-advice";
 
     public RestockAdvisorController(ProductService productService) {
         this.productService = productService;
