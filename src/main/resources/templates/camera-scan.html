@@ -464,11 +464,12 @@
             form.append('price', payload.price);
             form.append('minThreshold', 5);
             form.append('salesVelocity', 1.0);
-            const res = await fetch('/add-product', {
+            const res = await fetch('/api/products', {
                 method: 'POST',
-                body: form
+                body: form,
+                redirect: 'follow'
             });
-            if (!res.ok) throw new Error('Save failed');
+            if (!res.ok && res.status !== 302) throw new Error('Save failed');
             btn.textContent = '✅ Saved!';
             btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
             setTimeout(() => window.location.href = '/products', 1200);
