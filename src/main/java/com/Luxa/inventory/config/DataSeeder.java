@@ -18,7 +18,7 @@ import java.util.List;
 public class DataSeeder {
 
     @Bean
-    @Profile("dev")
+    @Profile({"dev", "prod"})
     public CommandLineRunner seedData(
             ProductRepository productRepo,
             UserRepository userRepo,
