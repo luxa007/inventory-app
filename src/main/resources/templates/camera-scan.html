@@ -457,10 +457,16 @@
         };
 
         try {
-            const res = await fetch('/api/products', {
+            const form = new FormData();
+            form.append('name', payload.name);
+            form.append('category', payload.category);
+            form.append('quantity', payload.quantity);
+            form.append('price', payload.price);
+            form.append('minThreshold', 5);
+            form.append('salesVelocity', 1.0);
+            const res = await fetch('/add-product', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: form
             });
             if (!res.ok) throw new Error('Save failed');
             btn.textContent = '✅ Saved!';
