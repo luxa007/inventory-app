@@ -457,19 +457,12 @@
         };
 
         try {
-            const form = new FormData();
-            form.append('name', payload.name);
-            form.append('category', payload.category);
-            form.append('quantity', payload.quantity);
-            form.append('price', payload.price);
-            form.append('minThreshold', 5);
-            form.append('salesVelocity', 1.0);
             const res = await fetch('/api/products', {
                 method: 'POST',
-                body: form,
-                redirect: 'follow'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-            if (!res.ok && res.status !== 302) throw new Error('Save failed');
+            if (!res.ok) throw new Error('Save failed');
             btn.textContent = '✅ Saved!';
             btn.style.background = 'linear-gradient(135deg, #059669, #047857)';
             setTimeout(() => window.location.href = '/products', 1200);
