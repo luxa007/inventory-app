@@ -422,7 +422,7 @@
         hideError();
 
         const formData = new FormData();
-        formData.append('image', blob, 'capture.jpg');
+        formData.append('file', blob, 'capture.jpg');
 
         try {
             const res = await fetch('/api/scan', { method: 'POST', body: formData });
