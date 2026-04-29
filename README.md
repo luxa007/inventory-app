@@ -1,31 +1,21 @@
-# SmartStock AI (Inventory)
+# SmartStock AI
 
-Spring Boot 3.3.11 + Thymeleaf + JPA inventory demo with product CRUD, search, pagination, low-stock page, and dev data seeding.
+AI-powered inventory management system built with Spring Boot + FastAPI.
 
-## Requirements
+## Live Demo
+https://inventory-app-production-e66a.up.railway.app
+Login: admin / admin
 
-- Java 17+
-- Maven (or use `./mvnw`)
+## Features
+- AI Camera Scan - point camera at product, AI identifies it instantly
+- Restock Advisor - AI recommends reorder quantities
+- Live Dashboard - real-time charts and stock levels
+- Low Stock Alerts
+- Export Reports
 
-## Run (development – H2 in-memory)
-
-```bash
-./mvnw clean spring-boot:run
-```
-
-H2 console: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:smartstockdb`, user `sa`, empty password).
-
-On startup with profile `dev`, sample products are seeded if the database is empty.
-
-## Tests
-
-```bash
-./mvnw test
-```
-
-## Main URLs
-
-- Home: `http://localhost:8080/`
-- Products: `http://localhost:8080/products`
-- Add product: `http://localhost:8080/add-product`
-- Register (demo): `http://localhost:8080/register`
+## Tech Stack
+- Backend: Java 17, Spring Boot 3, Spring Security
+- Frontend: Thymeleaf, Bootstrap 5, Chart.js
+- Database: PostgreSQL
+- AI Service: Python, FastAPI
+- Deployed: Railway + Render
