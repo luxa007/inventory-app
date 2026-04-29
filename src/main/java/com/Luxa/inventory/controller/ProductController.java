@@ -28,6 +28,8 @@ public class ProductController {
         model.addAttribute("lowStockCount", productService.countLowStock());
         model.addAttribute("lowStockThreshold", productService.getLowStockThreshold());
         model.addAttribute("keyword", keyword);
+        model.addAttribute("totalValue", productService.getTotalInventoryValue());
+        model.addAttribute("totalProducts", productService.countAll());
         return "products";
     }
 

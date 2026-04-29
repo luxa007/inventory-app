@@ -55,6 +55,8 @@ public class ProductService {
     }
 
     public Product save(Product product) { return productRepository.save(product); }
+    public long countAll() { return productRepository.count(); }
+    public java.math.BigDecimal getTotalInventoryValue() { java.math.BigDecimal v = productRepository.sumInventoryValue(); return v != null ? v : java.math.BigDecimal.ZERO; }
 
     public Product requireById(long id) {
         return productRepository.findById(id)
