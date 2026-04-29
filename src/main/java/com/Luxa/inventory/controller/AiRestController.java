@@ -96,7 +96,7 @@ public class AiRestController {
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("image", new MultipartInputStreamFileResource(
+            body.add("file", new MultipartInputStreamFileResource(
                     image.getInputStream(), image.getOriginalFilename()));
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity =
