@@ -25,7 +25,7 @@ public class ProductService {
 
     public Page<Product> search(String keyword, int page) {
         String kw = (keyword == null) ? "" : keyword.trim();
-        PageRequest pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("name").ascending());
+        PageRequest pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("id").descending());
         return productRepository.search(kw, pageable);
     }
 
