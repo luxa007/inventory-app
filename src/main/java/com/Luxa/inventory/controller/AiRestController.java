@@ -33,7 +33,7 @@ public class AiRestController {
      */
     @PostMapping("/scan")
     public ResponseEntity<Map<String, Object>> scan(
-            @RequestParam("image") MultipartFile image) {
+            @RequestParam("file") MultipartFile image) {
 
         return forwardToAiService(image);
     }

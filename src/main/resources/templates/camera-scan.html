@@ -436,7 +436,7 @@
     }
 
     function fillForm(data) {
-        document.getElementById('productName').value = data.product_name || '';
+        document.getElementById('productName').value = data.name || data.product_name || '';
         document.getElementById('productCategory').value = data.category || '';
         if (data.product_name) document.getElementById('nameFlag').style.display = 'flex';
         if (data.category) document.getElementById('categoryFlag').style.display = 'flex';
