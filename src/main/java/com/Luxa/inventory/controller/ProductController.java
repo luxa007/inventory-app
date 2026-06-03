@@ -2,9 +2,11 @@ package com.Luxa.inventory.controller;
 
 import com.Luxa.inventory.model.Product;
 import com.Luxa.inventory.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -48,9 +50,15 @@ public class ProductController {
     }
 
     @PostMapping("/add-product")
-    public String saveProduct(@ModelAttribute Product product, RedirectAttributes ra) {
+    public String saveProduct(@Valid @ModelAttribute Product product,
+                              BindingResult result,
+                              Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("categories", productService.findAllCategories());
+            return "add-product";
+        }
         productService.save(product);
-        ra.addFlashAttribute("successMessage", "Product added successfully.");
+        model.addAttribute("successMessage", "Product added successfully.");
         return "redirect:/products";
     }
 
@@ -63,10 +71,15 @@ public class ProductController {
 
     @PostMapping("/update-product/{id}")
     public String updateProduct(@PathVariable Long id,
-                                @ModelAttribute Product product,
-                                RedirectAttributes ra) {
+                                @Valid @ModelAttribute Product product,
+                                BindingResult result,
+                                Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("categories", productService.findAllCategories());
+            return "edit-product";
+        }
         productService.update(id, product);
-        ra.addFlashAttribute("successMessage", "Product updated successfully.");
+        model.addAttribute("successMessage", "Product updated successfully.");
         return "redirect:/products";
     }
 
