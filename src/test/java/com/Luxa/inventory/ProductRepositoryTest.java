@@ -22,14 +22,18 @@ class ProductRepositoryTest {
     @Autowired
     ProductRepository productRepository;
 
+    private Product buildProduct(String name, String category, int qty, BigDecimal price) {
+        Product p = new Product();
+        p.setName(name);
+        p.setCategory(category);
+        p.setQuantity(qty);
+        p.setPrice(price);
+        return p;
+    }
+
     @Test
     void search_findsByNameCaseInsensitive() {
-        Product p = new Product();
-        p.setName("Basmati Rice");
-        p.setCategory("Grains");
-        p.setPrice(new BigDecimal("10.00"));
-        p.setQuantity(5);
-        productRepository.save(p);
+        productRepository.save(buildProduct("Basmati Rice", "Grains", 5, new BigDecimal("10.00")));
 
         Page<Product> page = productRepository.search("basmati", PageRequest.of(0, 10));
         assertThat(page.getContent()).hasSize(1);
@@ -38,34 +42,19 @@ class ProductRepositoryTest {
 
     @Test
     void findLowStockExclusive_excludesZero() {
-        Product a = new Product();
-        a.setName("Zero");
-        a.setCategory("X");
-        a.setPrice(BigDecimal.ONE);
-        a.setQuantity(0);
-        productRepository.save(a);
-
-        Product b = new Product();
-        b.setName("Low");
-        b.setCategory("X");
-        b.setPrice(BigDecimal.ONE);
-        b.setQuantity(3);
-        productRepository.save(b);
+        productRepository.save(buildProduct("Zero Stock", "Grocery", 0, BigDecimal.ONE));
+        productRepository.save(buildProduct("Low Stock", "Grocery", 3, BigDecimal.ONE));
 
         assertThat(productRepository.findLowStockExclusive(5))
                 .extracting(Product::getName)
-                .containsExactly("Low");
+                .containsExactly("Low Stock");
     }
 
     @Test
     void sumInventoryValue_multipliesPriceAndQty() {
-        Product p = new Product();
-        p.setName("A");
-        p.setCategory("C");
-        p.setPrice(new BigDecimal("10.00"));
-        p.setQuantity(3);
-        productRepository.save(p);
+        productRepository.save(buildProduct("Test Product", "Category", 3, new BigDecimal("10.00")));
 
-        assertThat(productRepository.sumInventoryValue()).isEqualByComparingTo(new BigDecimal("30.00"));
+        assertThat(productRepository.sumInventoryValue())
+                .isEqualByComparingTo(new BigDecimal("30.00"));
     }
 }
