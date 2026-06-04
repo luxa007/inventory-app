@@ -36,3 +36,4 @@ venv/
 uvicorn
 java.util.List
 *.bak
+src/main/resources/application-dev.properties
