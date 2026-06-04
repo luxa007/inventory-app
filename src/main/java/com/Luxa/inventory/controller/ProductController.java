@@ -52,13 +52,14 @@ public class ProductController {
     @PostMapping("/add-product")
     public String saveProduct(@Valid @ModelAttribute Product product,
                               BindingResult result,
-                              Model model) {
+                              Model model,
+                              RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("categories", productService.findAllCategories());
             return "add-product";
         }
         productService.save(product);
-        model.addAttribute("successMessage", "Product added successfully.");
+        ra.addFlashAttribute("successMessage", "Product added successfully.");
         return "redirect:/products";
     }
 
@@ -73,13 +74,14 @@ public class ProductController {
     public String updateProduct(@PathVariable Long id,
                                 @Valid @ModelAttribute Product product,
                                 BindingResult result,
-                                Model model) {
+                                Model model,
+                                RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("categories", productService.findAllCategories());
             return "edit-product";
         }
         productService.update(id, product);
-        model.addAttribute("successMessage", "Product updated successfully.");
+        ra.addFlashAttribute("successMessage", "Product updated successfully.");
         return "redirect:/products";
     }
 
