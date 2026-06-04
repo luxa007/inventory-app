@@ -7,11 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class ProductService {
+
     private static final int LOW_STOCK_THRESHOLD = 5;
     private static final int PAGE_SIZE = 10;
     private final ProductRepository productRepository;
@@ -39,9 +43,9 @@ public class ProductService {
     }
 
     public int getLowStockThreshold() { return LOW_STOCK_THRESHOLD; }
-    
-    public long countLowStock() { 
-        return productRepository.findLowStockExclusive(LOW_STOCK_THRESHOLD).size(); 
+
+    public long countLowStock() {
+        return productRepository.findLowStockExclusive(LOW_STOCK_THRESHOLD).size();
     }
 
     public List<Product> getLowStockProducts() {
@@ -54,23 +58,32 @@ public class ProductService {
         return productRepository.findLowStockExclusive(LOW_STOCK_THRESHOLD);
     }
 
-    public Product save(Product product) { return productRepository.save(product); }
     public long countAll() { return productRepository.count(); }
-    public java.math.BigDecimal getTotalInventoryValue() { java.math.BigDecimal v = productRepository.sumInventoryValue(); return v != null ? v : java.math.BigDecimal.ZERO; }
+
+    public java.math.BigDecimal getTotalInventoryValue() {
+        java.math.BigDecimal v = productRepository.sumInventoryValue();
+        return v != null ? v : java.math.BigDecimal.ZERO;
+    }
 
     public Product requireById(long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found (id=" + id + ")."));
     }
 
+    @Transactional
+    public Product save(Product product) { return productRepository.save(product); }
+
+    @Transactional
     public Product update(long id, Product incoming) {
         Product existing = requireById(id);
         existing.setName(incoming.getName());
         existing.setCategory(incoming.getCategory());
         existing.setPrice(incoming.getPrice());
         existing.setQuantity(incoming.getQuantity());
+        existing.setMinThreshold(incoming.getMinThreshold());
         return productRepository.save(existing);
     }
 
+    @Transactional
     public void deleteById(long id) { productRepository.deleteById(id); }
 }
