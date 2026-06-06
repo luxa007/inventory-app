@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 @Table(name = "product")
 public class Product {
 
+@Version
+    private Long version;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,6 +49,9 @@ public class Product {
     public boolean isLowStock() {
         return this.quantity <= this.minThreshold;
     }
+
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
