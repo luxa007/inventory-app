@@ -24,6 +24,7 @@ public class SecurityConfig {
                         "/login", "/register",
                         "/css/**", "/js/**",
                         "/api/**",
+                        "/actuator/**",
                         "/dashboard",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
