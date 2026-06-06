@@ -17,5 +17,6 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
     java.math.BigDecimal sumRevenueSince(LocalDateTime since);
 
     @Query("SELECT s.product.id, SUM(s.quantitySold) FROM SaleTransaction s GROUP BY s.product.id ORDER BY SUM(s.quantitySold) DESC")
+    List<SaleTransaction> findTop20ByOrderByTimestampDesc();
     List<Object[]> findTopSellingProducts();
 }

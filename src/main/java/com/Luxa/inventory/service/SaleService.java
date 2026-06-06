@@ -98,8 +98,13 @@ public class SaleService {
         return revenue != null ? revenue : BigDecimal.ZERO;
     }
 
+    public java.util.List<com.Luxa.inventory.model.SaleTransaction> getRecentSales() {
+        return saleRepo.findTop20ByOrderByTimestampDesc();
+    }
+
     public BigDecimal getMonthlyRevenue() {
         BigDecimal revenue = saleRepo.sumRevenueSince(LocalDateTime.now().minusDays(30));
         return revenue != null ? revenue : BigDecimal.ZERO;
     }
 }
+// Appending getRecentSales - ignore this comment

@@ -26,6 +26,7 @@ public class SecurityConfig {
                         "/api/**",
                         "/actuator/**",
                         "/dashboard",
+                        "/sales",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/v3/api-docs/**"
@@ -38,7 +39,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)
-                .permitAll()
+
+
             )
             .logout(logout -> logout.permitAll());
         return http.build();
