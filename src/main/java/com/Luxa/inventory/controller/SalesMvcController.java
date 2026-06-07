@@ -4,6 +4,7 @@ import com.Luxa.inventory.service.ProductService;
 import com.Luxa.inventory.service.SaleService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +33,8 @@ public class SalesMvcController {
     @PreAuthorize("hasRole('ADMIN')")
     public String recordSale(@RequestParam Long productId,
                               @RequestParam Integer quantity,
-                              Authentication auth,
                               RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         try {
             saleService.recordSale(productId, quantity, auth.getName());
             redirectAttributes.addFlashAttribute("success",
