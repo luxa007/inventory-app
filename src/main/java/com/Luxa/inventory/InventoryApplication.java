@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class InventoryApplication {
     public static void main(String[] args) {
-        SpringApplication.run(InventoryApplication.class, args);
         System.out.println("DEBUG DATASOURCE URL: " + System.getenv("SPRING_DATASOURCE_URL"));
         System.out.println("DEBUG DATASOURCE USERNAME: " + System.getenv("SPRING_DATASOURCE_USERNAME"));
+        SpringApplication.run(InventoryApplication.class, args);
     }
 }
