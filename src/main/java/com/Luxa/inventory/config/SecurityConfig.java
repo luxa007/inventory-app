@@ -20,27 +20,22 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                // Truly public routes only: login/register pages, static assets, health check
                 .requestMatchers(
                         "/login", "/register",
                         "/css/**", "/js/**",
-                        "/api/**",
-                        "/actuator/**",
-                        "/dashboard",
-                        
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs/**"
+                        "/actuator/health"
                 ).permitAll()
+                // Admin-only write actions
                 .requestMatchers("/add-product", "/edit-product/**",
                         "/update-product/**", "/delete-product/**").hasRole("ADMIN")
+                // Everything else (including /dashboard and /api/**) requires login
                 .anyRequest().authenticated()
             )
             .userDetailsService(userService)
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/dashboard", true)
-
-
             )
             .logout(logout -> logout.permitAll());
         return http.build();
