@@ -5,6 +5,7 @@ import com.Luxa.inventory.model.Role;
 import com.Luxa.inventory.model.User;
 import com.Luxa.inventory.repository.ProductRepository;
 import com.Luxa.inventory.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +13,17 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
+import java.security.SecureRandom;
 import java.util.List;
 
 @Configuration
 public class DataSeeder {
+
+    @Value("${app.seed.admin-password:}")
+    private String adminPasswordOverride;
+
+    @Value("${app.seed.viewer-password:}")
+    private String viewerPasswordOverride;
 
     @Bean
     @Profile({"dev", "prod"})
@@ -24,15 +32,10 @@ public class DataSeeder {
             UserRepository userRepo,
             PasswordEncoder passwordEncoder) {
         return args -> {
+            seedUserIfMissing(userRepo, passwordEncoder, "admin", adminPasswordOverride, Role.ADMIN);
+            seedUserIfMissing(userRepo, passwordEncoder, "viewer", viewerPasswordOverride, Role.VIEWER);
 
-            // Always ensure admin and viewer exist with correct passwords
-            seedUser(userRepo, passwordEncoder, "admin", "admin", Role.ADMIN);
-            seedUser(userRepo, passwordEncoder, "viewer", "viewer", Role.VIEWER);
-            System.out.println("Seeded users: admin / admin, viewer / viewer");
-
-            // Seed products only if none exist
             if (productRepo.count() > 0) return;
-
             List<Product> products = List.of(
                 product("Basmati Rice 5kg",  "Grains",     new BigDecimal("299.00"), 50),
                 product("Whole Milk 1L",     "Dairy",      new BigDecimal("62.00"),  30),
@@ -55,14 +58,45 @@ public class DataSeeder {
         };
     }
 
-    private void seedUser(UserRepository userRepo, PasswordEncoder encoder,
-                          String username, String rawPassword, Role role) {
-        User user = userRepo.findByUsername(username).orElse(new User());
+    /**
+     * Only creates the user if it does not already exist.
+     * Never overwrites an existing user's password on restart/redeploy.
+     * If no password override is supplied via env var, generates a random
+     * one-time password and prints it once so it can be captured and stored securely.
+     */
+    private void seedUserIfMissing(UserRepository userRepo, PasswordEncoder encoder,
+                                    String username, String passwordOverride, Role role) {
+        if (userRepo.findByUsername(username).isPresent()) {
+            return;
+        }
+        String rawPassword = (passwordOverride != null && !passwordOverride.isBlank())
+                ? passwordOverride
+                : generateRandomPassword();
+
+        User user = new User();
         user.setUsername(username);
         user.setPassword(encoder.encode(rawPassword));
         user.setRole(role);
         user.setEnabled(true);
         userRepo.save(user);
+
+        if (passwordOverride == null || passwordOverride.isBlank()) {
+            System.out.println("Seeded new user '" + username
+                    + "' with generated password: " + rawPassword
+                    + "  (SAVE THIS NOW - it will not be shown again. Log in and change it immediately.)");
+        } else {
+            System.out.println("Seeded new user '" + username + "' from configured password.");
+        }
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(16);
+        for (int i = 0; i < 16; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     private Product product(String name, String category, BigDecimal price, int qty) {
