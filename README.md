@@ -61,7 +61,12 @@ cp src/main/resources/application-dev.properties.example src/main/resources/appl
 
 App runs at http://localhost:8080
 
-Default credentials: `admin / admin` (full access) or `viewer / viewer` (read only)
+On first startup the app seeds an `admin` and a `viewer` user from the
+`APP_SEED_ADMIN_PASSWORD` / `APP_SEED_VIEWER_PASSWORD` environment variables
+(see [Environment Variables](#environment-variables)). Seeding is idempotent —
+it only creates these accounts if they don't already exist, so redeploys
+won't reset passwords. There are no hardcoded default credentials; set the
+env vars locally before first run. See [SECURITY.md](./SECURITY.md) for details.
 
 ### Run with Docker
 
@@ -91,7 +96,9 @@ Full interactive docs at /swagger-ui.html
 ./mvnw test
 ```
 
-19 tests across 4 test classes — ProductServiceTest, ProductRepositoryTest, ProductControllerWebTest, InventoryApplicationTests.
+25 tests across 5 test classes — ProductServiceTest, ProductRepositoryTest, ProductControllerWebTest, SecurityEnforcementTest, InventoryApplicationTests.
+
+`SecurityEnforcementTest` runs against the real `SecurityFilterChain` (not a mocked slice) and proves `/dashboard` and `/api/**` reject unauthenticated requests, and that admin-only routes reject a logged-in VIEWER. See [SECURITY.md](./SECURITY.md).
 
 ---
 
@@ -102,6 +109,11 @@ Full interactive docs at /swagger-ui.html
 | SPRING_DATASOURCE_URL | PostgreSQL JDBC URL |
 | SPRING_DATASOURCE_USERNAME | DB username |
 | SPRING_DATASOURCE_PASSWORD | DB password |
+| SPRING_FLYWAY_URL | PostgreSQL JDBC URL used for migrations |
+| SPRING_FLYWAY_USER | DB username used for migrations |
+| SPRING_FLYWAY_PASSWORD | DB password used for migrations |
+| APP_SEED_ADMIN_PASSWORD | Password for the seeded `admin` account (set once, idempotent) |
+| APP_SEED_VIEWER_PASSWORD | Password for the seeded `viewer` account (set once, idempotent) |
 | ANTHROPIC_API_KEY | Claude API key |
 
 ---
