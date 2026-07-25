@@ -92,7 +92,7 @@ class ProductServiceTest {
 
     @Test
     void countLowStock_returnsCorrectCount() {
-        when(productRepository.findLowStockExclusive(5)).thenReturn(List.of(sampleProduct));
+        when(productRepository.countLowStockByOwnThreshold()).thenReturn(1L);
         assertThat(productService.countLowStock()).isEqualTo(1L);
     }
 

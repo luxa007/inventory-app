@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class ProductService {
 
-    private static final int LOW_STOCK_THRESHOLD = 5;
     private static final int PAGE_SIZE = 10;
     private final ProductRepository productRepository;
 
@@ -42,10 +41,13 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public int getLowStockThreshold() { return LOW_STOCK_THRESHOLD; }
+    // Per-product threshold ("units" varies by product, so there's no single
+    // number to display here). Kept for template compatibility but templates
+    // should prefer showing each product's own minThreshold instead.
+    public int getLowStockThreshold() { return 5; }
 
     public long countLowStock() {
-        return productRepository.findLowStockExclusive(LOW_STOCK_THRESHOLD).size();
+        return productRepository.countLowStockByOwnThreshold();
     }
 
     public List<Product> getLowStockProducts() {
@@ -55,7 +57,7 @@ public class ProductService {
     }
 
     public List<Product> findLowStockProducts() {
-        return productRepository.findLowStockExclusive(LOW_STOCK_THRESHOLD);
+        return productRepository.findLowStockByOwnThreshold();
     }
 
     public long countAll() { return productRepository.count(); }

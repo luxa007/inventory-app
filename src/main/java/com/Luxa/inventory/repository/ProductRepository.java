@@ -24,4 +24,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.quantity > 0 AND p.quantity < :threshold")
     List<Product> findLowStockExclusive(@Param("threshold") int threshold);
+
+    // Single source of truth for "low stock": each product's own minThreshold,
+    // matching Product.isLowStock(). Replaces the global-threshold queries above,
+    // which disagreed with the per-product threshold shown in the UI.
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.quantity > 0 AND p.quantity <= p.minThreshold")
+    long countLowStockByOwnThreshold();
+
+    @Query("SELECT p FROM Product p WHERE p.quantity > 0 AND p.quantity <= p.minThreshold")
+    List<Product> findLowStockByOwnThreshold();
 }
