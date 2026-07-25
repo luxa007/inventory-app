@@ -63,19 +63,39 @@
                                     <th>Total</th>
                                     <th>By</th>
                                     <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="sale : ${recentSales}">
+                                <tr th:each="sale : ${recentSales}" th:classappend="${sale.voided} ? 'table-secondary text-muted' : ''">
                                     <td th:text="${sale.product.name}"></td>
                                     <td th:text="${sale.quantitySold}"></td>
                                     <td th:text="'₹' + ${sale.unitPriceAtSale}"></td>
                                     <td th:text="'₹' + ${sale.totalAmount}"></td>
                                     <td th:text="${sale.soldBy}"></td>
                                     <td th:text="${#temporals.format(sale.timestamp, 'MMM dd, HH:mm')}"></td>
+                                    <td>
+                                        <span th:if="${sale.voided}" class="badge bg-secondary">Voided</span>
+                                        <span th:unless="${sale.voided}" class="badge bg-success">Active</span>
+                                    </td>
+                                    <td>
+                                        <form th:unless="${sale.voided}"
+                                              th:action="@{/sales/{id}/void(id=${sale.id})}"
+                                              method="post"
+                                              onsubmit="return confirm('Void this sale? Stock will be restored.')">
+                                            <input type="hidden" name="reason" value="Manually voided">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Void
+                                            </button>
+                                        </form>
+                                        <span th:if="${sale.voided}" class="text-muted small"
+                                              th:text="${sale.voidedBy + ' · ' + #temporals.format(sale.voidedAt, 'MMM dd')}">
+                                        </span>
+                                    </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(recentSales)}">
-                                    <td colspan="6" class="text-center text-muted py-3">No sales recorded yet.</td>
+                                    <td colspan="8" class="text-center text-muted py-3">No sales recorded yet.</td>
                                 </tr>
                             </tbody>
                         </table>
