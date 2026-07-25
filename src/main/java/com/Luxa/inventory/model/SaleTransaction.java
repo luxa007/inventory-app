@@ -44,23 +44,4 @@ public class SaleTransaction {
     public void setSoldBy(String soldBy) { this.soldBy = soldBy; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-
-    @Column(nullable = false)
-    private boolean voided = false;
-
-    private java.time.LocalDateTime voidedAt;
-
-    private String voidedBy;
-
-    private String voidReason;
-
-    public boolean isVoided() { return voided; }
-    public void setVoided(boolean voided) { this.voided = voided; }
-    public java.time.LocalDateTime getVoidedAt() { return voidedAt; }
-    public void setVoidedAt(java.time.LocalDateTime voidedAt) { this.voidedAt = voidedAt; }
-    public String getVoidedBy() { return voidedBy; }
-    public void setVoidedBy(String voidedBy) { this.voidedBy = voidedBy; }
-    public String getVoidReason() { return voidReason; }
-    public void setVoidReason(String voidReason) { this.voidReason = voidReason; }
-
 }
