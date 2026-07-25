@@ -37,9 +37,13 @@
         <div class="table-container shadow-sm">
             <div class="p-4 border-bottom bg-light d-flex justify-content-between">
                 <h5 class="mb-0 fw-bold">Stock Inventory</h5>
-                <div class="input-group w-25">
-                    <input type="text" class="form-control form-control-sm" placeholder="Search products...">
-                </div>
+                <form method="get" th:action="@{/products}" class="input-group w-25">
+                    <input type="text" name="keyword" th:value="${keyword}"
+                           class="form-control form-control-sm" placeholder="Search products...">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
             </div>
             <table class="table table-hover align-middle mb-0">
                 <thead>
