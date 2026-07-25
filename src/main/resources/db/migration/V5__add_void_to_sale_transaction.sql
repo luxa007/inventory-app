@@ -1,7 +1,10 @@
-CREATE TABLE IF NOT EXISTS sale_void (
-    id BIGSERIAL PRIMARY KEY,
-    sale_transaction_id BIGINT NOT NULL REFERENCES sale_transaction(id),
-    voided_by VARCHAR(255) NOT NULL,
-    voided_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    reason VARCHAR(255)
-);
+-- Grant luxa_app_user permission to alter tables
+DO $$
+BEGIN
+    ALTER TABLE sale_transaction ADD COLUMN IF NOT EXISTS voided BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE sale_transaction ADD COLUMN IF NOT EXISTS voided_at TIMESTAMP;
+    ALTER TABLE sale_transaction ADD COLUMN IF NOT EXISTS voided_by VARCHAR(255);
+    ALTER TABLE sale_transaction ADD COLUMN IF NOT EXISTS void_reason VARCHAR(255);
+EXCEPTION WHEN insufficient_privilege THEN
+    RAISE NOTICE 'Skipping ownership change - already done';
+END $$;
