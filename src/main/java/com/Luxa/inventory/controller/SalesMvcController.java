@@ -2,6 +2,7 @@ package com.Luxa.inventory.controller;
 
 import com.Luxa.inventory.service.ProductService;
 import com.Luxa.inventory.service.SaleService;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,5 +44,14 @@ public class SalesMvcController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/sales";
+    }
+
+    // Read-only, so no @PreAuthorize role restriction — any logged-in user
+    // (ADMIN or VIEWER) can view sales history, same as /dashboard and /products.
+    @GetMapping("/sales/history")
+    public String salesHistory(@RequestParam(defaultValue = "0") int page, Model model) {
+        Page<com.Luxa.inventory.model.SaleTransaction> salesPage = saleService.getSalesHistory(page, 20);
+        model.addAttribute("salesPage", salesPage);
+        return "sales-history";
     }
 }

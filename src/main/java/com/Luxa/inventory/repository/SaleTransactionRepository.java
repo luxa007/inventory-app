@@ -1,6 +1,8 @@
 package com.Luxa.inventory.repository;
 
 import com.Luxa.inventory.model.SaleTransaction;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,10 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
     List<SaleTransaction> findByProductIdOrderByTimestampDesc(Long productId);
 
     List<SaleTransaction> findTop20ByOrderByTimestampDesc();
+
+    // Full, paginated sales history — findTop20 above only ever returns the
+    // most recent 20 rows with no way to see anything older than that.
+    Page<SaleTransaction> findAllByOrderByTimestampDesc(Pageable pageable);
 
     @Query("SELECT SUM(s.quantitySold) FROM SaleTransaction s WHERE s.product.id = :productId AND s.timestamp >= :since")
     Integer sumQuantitySoldByProductSince(@Param("productId") Long productId, @Param("since") LocalDateTime since);

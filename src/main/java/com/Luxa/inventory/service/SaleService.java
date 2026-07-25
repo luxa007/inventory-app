@@ -2,6 +2,9 @@ package com.Luxa.inventory.service;
 
 import com.Luxa.inventory.model.*;
 import com.Luxa.inventory.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -100,6 +103,10 @@ public class SaleService {
 
     public java.util.List<com.Luxa.inventory.model.SaleTransaction> getRecentSales() {
         return saleRepo.findTop20ByOrderByTimestampDesc();
+    }
+
+    public Page<SaleTransaction> getSalesHistory(int page, int size) {
+        return saleRepo.findAllByOrderByTimestampDesc(PageRequest.of(page, size));
     }
 
     public BigDecimal getMonthlyRevenue() {

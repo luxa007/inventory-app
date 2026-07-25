@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: main-layout(~{::div.sales-history-body})}">
+<body>
+<div class="sales-history-body">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">🧾 Sales History</h2>
+            <p class="text-muted mb-0">Full record of every sale, most recent first.</p>
+        </div>
+        <a href="/sales" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Record Sale
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>By</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="sale : ${salesPage.content}">
+                            <td th:text="${sale.product.name}"></td>
+                            <td th:text="${sale.quantitySold}"></td>
+                            <td th:text="'₹' + ${sale.unitPriceAtSale}"></td>
+                            <td th:text="'₹' + ${sale.totalAmount}"></td>
+                            <td th:text="${sale.soldBy}"></td>
+                            <td th:text="${#temporals.format(sale.timestamp, 'MMM dd, yyyy HH:mm')}"></td>
+                        </tr>
+                        <tr th:if="${salesPage.content.isEmpty()}">
+                            <td colspan="6" class="text-center text-muted py-3">No sales recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3"
+                 th:if="${salesPage.totalPages > 1}">
+                <span class="text-muted small">
+                    Page <span th:text="${salesPage.number + 1}"></span> of
+                    <span th:text="${salesPage.totalPages}"></span>
+                    (<span th:text="${salesPage.totalElements}"></span> total sales)
+                </span>
+                <div class="btn-group">
+                    <a th:href="@{/sales/history(page=${salesPage.number - 1})}"
+                       th:classappend="${!salesPage.hasPrevious()} ? 'disabled'"
+                       class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-chevron-left"></i> Prev
+                    </a>
+                    <a th:href="@{/sales/history(page=${salesPage.number + 1})}"
+                       th:classappend="${!salesPage.hasNext()} ? 'disabled'"
+                       class="btn btn-sm btn-outline-secondary">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
