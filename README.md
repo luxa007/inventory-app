@@ -1,5 +1,13 @@
 # SmartStock AI — Intelligent Inventory Management
 
+![CI](https://github.com/luxa007/inventory-app/actions/workflows/ci.yml/badge.svg)
+
+## 🌐 Live Demo
+**https://smartstock-ai-1ler.onrender.com**
+Login: `viewer` / `your-viewer-password` (read-only) or `admin` / `your-admin-password` (full access)
+
+---
+
 A full-stack inventory management system with AI-powered restock recommendations, barcode scanning, and real-time analytics.
 
 Built with Java 17 + Spring Boot 3 + PostgreSQL + Claude AI.
