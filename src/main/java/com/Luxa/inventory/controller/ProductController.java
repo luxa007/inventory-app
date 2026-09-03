@@ -67,7 +67,9 @@ public class ProductController {
     public String showEditForm(@PathVariable Long id, Model model) {
         model.addAttribute("product", productService.requireById(id));
         model.addAttribute("categories", productService.findAllCategories());
-        return "edit-product";
+        model.addAttribute("pageTitle", "Edit Product");
+        model.addAttribute("formAction", "/update-product/" + id);
+        return "product-form";
     }
 
     @PostMapping("/update-product/{id}")
@@ -78,7 +80,9 @@ public class ProductController {
                                 RedirectAttributes ra) {
         if (result.hasErrors()) {
             model.addAttribute("categories", productService.findAllCategories());
-            return "edit-product";
+            model.addAttribute("pageTitle", "Edit Product");
+            model.addAttribute("formAction", "/update-product/" + id);
+            return "product-form";
         }
         productService.update(id, product);
         ra.addFlashAttribute("successMessage", "Product updated successfully.");

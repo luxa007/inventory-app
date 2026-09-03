@@ -69,6 +69,19 @@
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">
+                                Low Stock Alert Threshold <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" min="0"
+                                   th:field="*{minThreshold}"
+                                   th:classappend="${#fields.hasErrors('minThreshold')} ? 'is-invalid'"
+                                   class="form-control"
+                                   placeholder="5">
+                            <div class="invalid-feedback" th:errors="*{minThreshold}"></div>
+                            <div class="form-text">You'll see a low-stock warning once quantity drops to or below this number.</div>
+                        </div>
+
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-success px-4">
                                 <i class="bi bi-check-lg me-1"></i>
