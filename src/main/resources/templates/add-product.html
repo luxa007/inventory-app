@@ -13,10 +13,17 @@
                 <button type="button" id="scanBtn" class="btn btn-primary w-100 py-2" onclick="startAiScan()">
                     <span id="btnText">Identify Product with AI</span>
                 </button>
+                <div id="scanAlert" class="alert mt-3 mb-0 py-2 d-none" role="alert"></div>
             </div>
 
             <div class="glass-panel p-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
                 <form th:action="@{/add-product}" th:object="${product}" method="post">
+                    <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Please fix the following before saving:
+                        <ul class="mb-0 mt-1">
+                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                        </ul>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label text-muted">Product Name</label>
                         <input type="text" id="nameField" th:field="*{name}" class="form-control bg-dark text-white border-secondary" required>
@@ -35,6 +42,13 @@
                             <input type="number" th:field="*{quantity}" class="form-control bg-dark text-white border-secondary" required>
                         </div>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">
+                            Low Stock Alert Threshold
+                            <i class="bi bi-question-circle" title="You'll see a low-stock warning once quantity drops to or below this number"></i>
+                        </label>
+                        <input type="number" min="0" th:field="*{minThreshold}" class="form-control bg-dark text-white border-secondary" required>
+                    </div>
                     <button type="submit" class="btn btn-success w-100 py-2 mt-2">Add to Inventory</button>
                 </form>
             </div>
@@ -43,12 +57,21 @@
 </main>
 
 <script>
+function showScanAlert(message, type) {
+    const box = document.getElementById('scanAlert');
+    box.textContent = message;
+    box.className = 'alert mt-3 mb-0 py-2 alert-' + type;
+}
+
 async function startAiScan() {
     const fileInput = document.getElementById('aiUpload');
     const btn = document.getElementById('scanBtn');
     const btnText = document.getElementById('btnText');
 
-    if (!fileInput.files || !fileInput.files[0]) return alert("Please select an image first!");
+    if (!fileInput.files || !fileInput.files[0]) {
+        showScanAlert('Please select an image first.', 'warning');
+        return;
+    }
 
     btn.disabled = true;
     btnText.innerText = "Analyzing Image...";
@@ -66,8 +89,9 @@ async function startAiScan() {
         
         btnText.innerText = "Scan Successful!";
         btn.className = "btn btn-success w-100 py-2";
+        showScanAlert('Product identified — name and category filled in below.', 'success');
     } catch (err) {
-        alert("Check if Python is running on port 8000!");
+        showScanAlert('Scan failed. Check that the AI scanning service is running.', 'danger');
         btn.disabled = false;
         btnText.innerText = "Retry AI Scan";
     }

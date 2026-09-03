@@ -10,6 +10,11 @@
             <a href="/export/products" class="btn btn-primary px-4 py-2"><i class="bi bi-download me-2"></i>Export Report</a>
         </div>
 
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="stat-card">
@@ -60,8 +65,8 @@
                         <td th:text="${p.quantity}">0</td>
                         <td th:text="${'₹' + p.price}">0</td>
                         <td>
-                            <span th:if="${p.quantity < 10}" class="badge rounded-pill bg-danger text-white px-3">Restock</span>
-                            <span th:if="${p.quantity >= 10}" class="badge rounded-pill bg-success text-white px-3">Optimal</span>
+                            <span th:if="${p.lowStock}" class="badge rounded-pill bg-danger text-white px-3">Restock</span>
+                            <span th:unless="${p.lowStock}" class="badge rounded-pill bg-success text-white px-3">Optimal</span>
                         </td>
                     </tr>
                 </tbody>
